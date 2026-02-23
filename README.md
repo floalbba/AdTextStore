@@ -1,0 +1,2 @@
+# AdTextStore
+Advertising Text Store
