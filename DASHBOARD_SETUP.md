@@ -29,6 +29,14 @@ npx prisma migrate deploy
 npx prisma db push --accept-data-loss
 ```
 
+**Если таблица Like отсутствует** (ошибка на /dashboard/public):
+
+```powershell
+npm run db:like
+```
+
+Или вручную: Neon Console → SQL Editor → выполнить `prisma/migrations/manual-add-like.sql`
+
 ## Запуск
 
 ```powershell

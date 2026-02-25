@@ -10,7 +10,7 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error(error);
+    console.error("[Error boundary]", error, error.digest);
   }, [error]);
 
   return (
@@ -19,8 +19,14 @@ export default function Error({
       <p style={{ color: "#666", marginBottom: "1rem" }}>
         {error.message || "Серверная ошибка"}
       </p>
-      <p style={{ fontSize: 14, color: "#999" }}>
-        Проверь переменные окружения (DATABASE_URL, AUTH_SECRET) и логи Vercel.
+      {error.digest && (
+        <p style={{ fontSize: 12, color: "#999", fontFamily: "monospace" }}>
+          Digest: {error.digest}
+        </p>
+      )}
+      <p style={{ fontSize: 14, color: "#999", marginTop: "1rem" }}>
+        Проверь: DATABASE_URL, DIRECT_URL, AUTH_SECRET в Vercel. Убедись, что миграции применены: 
+        <code style={{ display: "block", marginTop: 4 }}>npx prisma migrate deploy</code>
       </p>
       <button
         onClick={reset}

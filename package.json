@@ -12,7 +12,8 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
-    "db:verify": "npx tsx scripts/verify.ts"
+    "db:verify": "npx tsx scripts/verify.ts",
+    "db:like": "prisma db execute --file prisma/migrations/manual-add-like.sql --schema prisma/schema.prisma"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
