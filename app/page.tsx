@@ -24,19 +24,19 @@ export default async function HomePage() {
   }
 
   return (
-    <main>
+    <main className="p-8 max-w-4xl mx-auto">
       {error && (
         <div style={{ padding: "1rem", background: "#fee", color: "#c00", marginBottom: "1rem" }}>
           {error}
         </div>
       )}
-      <h1>ProStore</h1>
+      <h1>AdTextStore</h1>
       <p>
         {session?.user ? (
           <>
             <a href="/dashboard">Личный кабинет</a>
             {" · "}
-            <a href="/my-prompts">Мои промты</a>
+            <a href="/dashboard">Мои промты</a>
           </>
         ) : (
           <a href="/login">Войти через Google</a>

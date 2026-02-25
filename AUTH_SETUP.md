@@ -1,6 +1,6 @@
 # Настройка аутентификации (Google OAuth)
 
-Инструкция по настройке NextAuth с провайдером Google для ProStore.
+Инструкция по настройке NextAuth с провайдером Google для AdTextStore.
 
 ## 1. Google Cloud Console
 
@@ -12,7 +12,7 @@
 
 1. Нажми **Create Credentials** → **OAuth client ID**
 2. Тип приложения: **Web application**
-3. Имя: например, `ProStore`
+3. Имя: например, `AdTextStore`
 4. **Authorized JavaScript origins**:
    - Локально: `http://localhost:3000`
    - Production: `https://твой-проект.vercel.app`

@@ -22,7 +22,6 @@ model User {
   sessions Session[]
   notes    Note[]
   prompts  Prompt[]
-  votes    Vote[]
 }
 
 model Account {
@@ -69,53 +68,18 @@ model Note {
   owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 }
 
-model Category {
-  id       String   @id @default(cuid())
-  category String
-  prompts  Prompt[]
-}
-
 model Prompt {
-  id          String    @id @default(cuid())
-  title       String
-  content     String
-  description String?
-  visibility  Visibility @default(PRIVATE)
-  publishedAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  ownerId     String
-  owner       User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  categoryId  String
-  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  votes       Vote[]
-  tags        Tag[]
+  id         String   @id @default(cuid())
+  title      String
+  content    String   @db.Text
+  isPublic   Boolean  @default(false)
+  isFavorite Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  ownerId    String
+  owner      User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
   @@index([ownerId, updatedAt])
-  @@index([visibility, createdAt])
-}
-
-model Tag {
-  id      String   @id @default(cuid())
-  name    String   @unique
-  prompts Prompt[]
-}
-
-model Vote {
-  id        String   @id @default(cuid())
-  value     Int      @default(1)
-  createdAt DateTime @default(now())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  promptId  String
-  prompt    Prompt   @relation(fields: [promptId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, promptId])
-  @@index([promptId])
-  @@index([userId])
-}
-
-enum Visibility {
-  PRIVATE
-  PUBLIC
+  @@index([isPublic, createdAt])
+  @@index([ownerId, isFavorite])
 }

@@ -1,5 +1,5 @@
 /**
- * Скрипт проверки: создаёт тестового пользователя, промт и голос (Vote).
+ * Скрипт проверки: создаёт тестового пользователя и промт.
  * Запуск: npx tsx scripts/verify.ts
  */
 import { PrismaClient } from "@prisma/client";
@@ -19,36 +19,15 @@ async function main() {
   });
   console.log("✓ Пользователь:", user.email);
 
-  let category = await prisma.category.findFirst({
-    where: { category: "Тестовая категория" },
-  });
-  if (!category) {
-    category = await prisma.category.create({
-      data: { category: "Тестовая категория" },
-    });
-  }
-  console.log("✓ Категория:", category.category);
-
   const prompt = await prisma.prompt.create({
     data: {
       title: "Тестовый промт",
       content: "Это тестовый контент промта для проверки схемы.",
-      description: "Описание тестового промта",
-      visibility: "PUBLIC",
+      isPublic: true,
       ownerId: user.id,
-      categoryId: category.id,
     },
   });
   console.log("✓ Промт:", prompt.title);
-
-  const vote = await prisma.vote.create({
-    data: {
-      userId: user.id,
-      promptId: prompt.id,
-      value: 1,
-    },
-  });
-  console.log("✓ Голос (Vote):", vote.id);
 
   console.log("\nПроверка завершена успешно.");
 }

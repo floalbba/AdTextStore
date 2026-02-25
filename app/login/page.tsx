@@ -37,7 +37,7 @@ export default async function LoginPage({
         padding: "2rem",
       }}
     >
-      <h1 style={{ marginBottom: "2rem" }}>ProStore</h1>
+      <h1 style={{ marginBottom: "2rem" }}>AdTextStore</h1>
       {error && (
         <div
           style={{

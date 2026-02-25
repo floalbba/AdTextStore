@@ -8,9 +8,7 @@ export async function middleware(req: NextRequest) {
     secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
   });
 
-  const isProtected =
-    req.nextUrl.pathname.startsWith("/dashboard") ||
-    req.nextUrl.pathname.startsWith("/my-prompts");
+  const isProtected = req.nextUrl.pathname.startsWith("/dashboard");
 
   if (isProtected && !token) {
     const loginUrl = new URL("/login", req.url);
@@ -22,5 +20,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/my-prompts/:path*"],
+  matcher: ["/dashboard/:path*"],
 };

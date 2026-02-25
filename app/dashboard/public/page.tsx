@@ -2,25 +2,24 @@ import { Suspense } from "react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PromptsList } from "@/components/dashboard/PromptsList";
-import { PromptDialogTrigger } from "@/components/dashboard/PromptDialogTrigger";
-import { DashboardPromptsClient } from "@/components/dashboard/DashboardPromptsClient";
+import { DashboardPublicClient } from "@/components/dashboard/DashboardPublicClient";
 
 const PAGE_SIZE = 10;
 
-export default async function DashboardPage({
+export default async function DashboardPublicPage({
   searchParams,
 }: {
   searchParams: Promise<{ q?: string; page?: string }>;
 }) {
   const session = await auth();
-  if (!session?.user?.id) return null;
+  const userId = session?.user?.id ?? "";
 
   const { q = "", page = "1" } = await searchParams;
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
   const skip = (pageNum - 1) * PAGE_SIZE;
 
   const where = {
-    ownerId: session.user.id,
+    isPublic: true,
     ...(q.trim()
       ? {
           OR: [
@@ -46,21 +45,20 @@ export default async function DashboardPage({
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold text-slate-900">Личный кабинет</h1>
-      <h2 className="mt-2 text-lg font-medium text-slate-600">Мои промты</h2>
+      <h2 className="mt-2 text-lg font-medium text-slate-600">Публичные промты</h2>
 
-      <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mt-6">
         <Suspense fallback={<div className="h-9 w-full max-w-xs rounded-md border border-slate-200 bg-slate-50" />}>
-          <DashboardPromptsClient searchQuery={q} />
+          <DashboardPublicClient searchQuery={q} />
         </Suspense>
-        <PromptDialogTrigger mode="create" />
       </div>
 
       <div className="mt-6">
         <PromptsList
           prompts={prompts}
-          currentUserId={session.user.id}
+          currentUserId={userId}
           showDelete={true}
-          emptyMessage="У вас пока нет промтов — создайте первый"
+          emptyMessage="Публичных промтов пока нет"
         />
       </div>
 
@@ -68,7 +66,7 @@ export default async function DashboardPage({
         <div className="mt-6 flex items-center justify-center gap-2">
           {pageNum > 1 && (
             <a
-              href={`/dashboard?q=${encodeURIComponent(q)}&page=${pageNum - 1}`}
+              href={`/dashboard/public?q=${encodeURIComponent(q)}&page=${pageNum - 1}`}
               className="rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
             >
               ← Назад
@@ -79,7 +77,7 @@ export default async function DashboardPage({
           </span>
           {pageNum < totalPages && (
             <a
-              href={`/dashboard?q=${encodeURIComponent(q)}&page=${pageNum + 1}`}
+              href={`/dashboard/public?q=${encodeURIComponent(q)}&page=${pageNum + 1}`}
               className="rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
             >
               Вперёд →
