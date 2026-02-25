@@ -3,11 +3,20 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
+  const user = await prisma.user.upsert({
+    where: { email: "seed@adtextstore.local" },
+    create: {
+      email: "seed@adtextstore.local",
+      name: "Seed User",
+    },
+    update: {},
+  });
+
   await prisma.note.createMany({
     data: [
-      { title: "Первая заметка" },
-      { title: "Вторая заметка" },
-      { title: "Третья заметка" },
+      { title: "Первая заметка", ownerId: user.id },
+      { title: "Вторая заметка", ownerId: user.id },
+      { title: "Третья заметка", ownerId: user.id },
     ],
   });
 }
