@@ -10,6 +10,9 @@ export default async function HomePage() {
   return (
     <main>
       <h1>AdTextStore</h1>
+      <p>
+        <a href="/view-db">View DB</a> — просмотр и редактирование БД
+      </p>
       <p>Заметки из PostgreSQL (Neon):</p>
       {notes.length === 0 ? (
         <p>Нет заметок. Запусти: <code>npx prisma db seed</code></p>
