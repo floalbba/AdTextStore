@@ -42,24 +42,39 @@ export default async function DashboardPublicPage({
       ? { likes: { _count: "desc" as const } }
       : { createdAt: "desc" as const };
 
-  const [promptsRaw, total] = await Promise.all([
-    prisma.prompt.findMany({
-      where,
-      orderBy,
-      skip,
-      take: PAGE_SIZE,
-      include: {
-        _count: { select: { likes: true } },
-        likes: userId
-          ? { where: { userId }, select: { id: true } }
-          : { where: { userId: "none" }, select: { id: true } },
-      },
-    }),
-    prisma.prompt.count({ where }),
-  ]).catch((e) => {
+  let promptsRaw: { id: string; title: string; content: string; isPublic: boolean; isFavorite: boolean; ownerId: string; _count: { likes: number }; likes: { id: string }[] }[] = [];
+  let total = 0;
+
+  try {
+    const result = await Promise.all([
+      prisma.prompt.findMany({
+        where,
+        orderBy,
+        skip,
+        take: PAGE_SIZE,
+        include: {
+          _count: { select: { likes: true } },
+          likes: userId
+            ? { where: { userId }, select: { id: true } }
+            : { where: { userId: "none" }, select: { id: true } },
+        },
+      }),
+      prisma.prompt.count({ where }),
+    ]);
+    promptsRaw = result[0];
+    total = result[1];
+  } catch (e) {
     console.error("[DashboardPublic] Prisma error:", e);
-    throw e;
-  });
+    return (
+      <div className="p-8">
+        <h1 className="text-2xl font-bold text-slate-900">Личный кабинет</h1>
+        <h2 className="mt-2 text-lg font-medium text-slate-600">Публичные промты</h2>
+        <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
+          Не удалось загрузить промты. Проверьте DATABASE_URL и наличие таблицы Like (npm run db:like).
+        </div>
+      </div>
+    );
+  }
 
   const prompts = promptsRaw.map((p) => ({
     id: p.id,

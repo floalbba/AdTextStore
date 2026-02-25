@@ -9,43 +9,68 @@ export const dynamic = "force-dynamic";
 const SECTION_SIZE = 15;
 
 export default async function HomePage() {
-  const session = await auth();
+  let session = null;
+  try {
+    session = await auth();
+  } catch (e) {
+    console.error("[HomePage] auth error:", e);
+  }
   const userId = session?.user?.id ?? null;
 
-  const [recentRaw, popularRaw] = await Promise.all([
-    prisma.prompt.findMany({
-      where: { isPublic: true },
-      orderBy: { createdAt: "desc" },
-      take: SECTION_SIZE,
-      include: {
-        _count: { select: { likes: true } },
-        owner: { select: { name: true } },
-      },
-    }),
-    prisma.prompt.findMany({
-      where: { isPublic: true },
-      orderBy: { likes: { _count: "desc" } },
-      take: SECTION_SIZE,
-      include: {
-        _count: { select: { likes: true } },
-        owner: { select: { name: true } },
-      },
-    }),
-  ]);
+  let dbError: string | null = null;
 
-  let likedPromptIds = new Set<string>();
-  if (userId) {
-    const allIds = [...new Set([...recentRaw.map((p) => p.id), ...popularRaw.map((p) => p.id)])];
-    const likes = await prisma.like.findMany({
-      where: { userId, promptId: { in: allIds } },
-      select: { promptId: true },
-    });
-    likedPromptIds = new Set(likes.map((l) => l.promptId));
+  async function fetchPrompts() {
+    return Promise.all([
+      prisma.prompt.findMany({
+        where: { isPublic: true },
+        orderBy: { createdAt: "desc" },
+        take: SECTION_SIZE,
+        include: {
+          _count: { select: { likes: true } },
+          owner: { select: { name: true } },
+        },
+      }),
+      prisma.prompt.findMany({
+        where: { isPublic: true },
+        orderBy: { likes: { _count: "desc" } },
+        take: SECTION_SIZE,
+        include: {
+          _count: { select: { likes: true } },
+          owner: { select: { name: true } },
+        },
+      }),
+    ]);
   }
 
-  const toCardData = (
-    p: (typeof recentRaw)[0]
-  ) => ({
+  const fetchResult = await (async () => {
+    try {
+      return await fetchPrompts();
+    } catch (e) {
+      console.error("[HomePage] Prisma error:", e);
+      dbError = e instanceof Error ? e.message : "Ошибка базы данных";
+      return [[], []] as Awaited<ReturnType<typeof fetchPrompts>>; // fallback on error
+    }
+  })();
+
+  const [recentRaw, popularRaw] = fetchResult;
+
+  let likedPromptIds = new Set<string>();
+  if (userId && !dbError) {
+    try {
+      const allIds = [...new Set([...recentRaw.map((p) => p.id), ...popularRaw.map((p) => p.id)])];
+      if (allIds.length > 0) {
+        const likes = await prisma.like.findMany({
+          where: { userId, promptId: { in: allIds } },
+          select: { promptId: true },
+        });
+        likedPromptIds = new Set(likes.map((l) => l.promptId));
+      }
+    } catch {
+      // likedByMe будет false для всех
+    }
+  }
+
+  const toCardData = (p: { id: string; title: string; content: string; createdAt: Date; owner?: { name: string | null }; _count: { likes: number } }) => ({
     id: p.id,
     title: p.title,
     content: p.content,
@@ -55,11 +80,16 @@ export default async function HomePage() {
     likedByMe: likedPromptIds.has(p.id),
   });
 
-  const recentPrompts = recentRaw.map(toCardData);
-  const popularPrompts = popularRaw.map(toCardData);
+  const recentPrompts = dbError ? [] : recentRaw.map(toCardData);
+  const popularPrompts = dbError ? [] : popularRaw.map(toCardData);
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {dbError && (
+        <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 text-sm">
+          Не удалось загрузить промты. Проверьте DATABASE_URL и наличие таблицы Like (npm run db:like).
+        </div>
+      )}
       {/* Hero */}
       <section className="rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 p-8 md:p-12 text-center">
         <h1 className="text-3xl md:text-4xl font-bold text-slate-900">
