@@ -7,12 +7,15 @@ interface Prompt {
   isPublic: boolean;
   isFavorite: boolean;
   ownerId: string;
+  likesCount?: number;
+  likedByMe?: boolean;
 }
 
 interface PromptsListProps {
   prompts: Prompt[];
   currentUserId: string;
   showDelete?: boolean;
+  showLike?: boolean;
   emptyMessage?: string;
 }
 
@@ -20,6 +23,7 @@ export function PromptsList({
   prompts,
   currentUserId,
   showDelete = true,
+  showLike = false,
   emptyMessage = "У вас пока нет промтов — создайте первый",
 }: PromptsListProps) {
   if (prompts.length === 0) {
@@ -38,6 +42,7 @@ export function PromptsList({
             prompt={prompt}
             currentUserId={currentUserId}
             showDelete={showDelete}
+            showLike={showLike}
           />
         </li>
       ))}

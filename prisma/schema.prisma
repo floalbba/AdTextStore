@@ -22,6 +22,7 @@ model User {
   sessions Session[]
   notes    Note[]
   prompts  Prompt[]
+  likes    Like[]
 }
 
 model Account {
@@ -78,8 +79,21 @@ model Prompt {
   updatedAt  DateTime @updatedAt
   ownerId    String
   owner      User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  likes      Like[]
 
   @@index([ownerId, updatedAt])
   @@index([isPublic, createdAt])
   @@index([ownerId, isFavorite])
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  promptId  String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prompt    Prompt   @relation(fields: [promptId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, promptId])
+  @@index([promptId])
 }

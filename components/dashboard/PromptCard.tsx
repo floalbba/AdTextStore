@@ -16,6 +16,7 @@ import {
   toggleFavorite,
 } from "@/actions/prompts";
 import { PromptDialog } from "./PromptDialog";
+import { LikeButton } from "./LikeButton";
 import { cn } from "@/lib/utils";
 
 const PREVIEW_LENGTH = 120;
@@ -28,15 +29,19 @@ export interface PromptCardProps {
     isPublic: boolean;
     isFavorite: boolean;
     ownerId: string;
+    likesCount?: number;
+    likedByMe?: boolean;
   };
   currentUserId: string;
   showDelete?: boolean;
+  showLike?: boolean;
 }
 
 export function PromptCard({
   prompt,
   currentUserId,
   showDelete = true,
+  showLike = false,
 }: PromptCardProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -95,6 +100,14 @@ export function PromptCard({
         </div>
 
         <div className="flex shrink-0 items-center gap-1">
+          {showLike && prompt.isPublic && (
+            <LikeButton
+              promptId={prompt.id}
+              initialLiked={prompt.likedByMe ?? false}
+              initialCount={prompt.likesCount ?? 0}
+              isAuthenticated={!!currentUserId}
+            />
+          )}
           {isOwner && (
             <Button
               variant="ghost"
