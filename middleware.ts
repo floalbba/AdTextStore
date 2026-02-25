@@ -8,7 +8,10 @@ export async function middleware(req: NextRequest) {
     secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
   });
 
-  const isProtected = req.nextUrl.pathname.startsWith("/dashboard");
+  const path = req.nextUrl.pathname;
+  const isPublicCatalog = path === "/dashboard/public";
+  const isProtected =
+    path.startsWith("/dashboard") && !isPublicCatalog;
 
   if (isProtected && !token) {
     const loginUrl = new URL("/login", req.url);
