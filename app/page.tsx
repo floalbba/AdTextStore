@@ -4,13 +4,32 @@ import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const session = await auth();
-  const notes = await prisma.note.findMany({
-    orderBy: { createdAt: "desc" },
-  });
+  let session = null;
+  let notes: { id: string; title: string; createdAt: Date }[] = [];
+  let error: string | null = null;
+
+  try {
+    session = await auth();
+  } catch (e) {
+    error = "Ошибка аутентификации";
+  }
+
+  try {
+    notes = await prisma.note.findMany({
+      orderBy: { createdAt: "desc" },
+      select: { id: true, title: true, createdAt: true },
+    });
+  } catch (e) {
+    error = error || "Ошибка БД. Проверь DATABASE_URL и миграции.";
+  }
 
   return (
     <main>
+      {error && (
+        <div style={{ padding: "1rem", background: "#fee", color: "#c00", marginBottom: "1rem" }}>
+          {error}
+        </div>
+      )}
       <h1>ProStore</h1>
       <p>
         {session?.user ? (
