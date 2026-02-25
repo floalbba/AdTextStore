@@ -42,29 +42,24 @@ export default async function DashboardPublicPage({
       ? { likes: { _count: "desc" as const } }
       : { createdAt: "desc" as const };
 
-  let promptsRaw: Awaited<ReturnType<typeof prisma.prompt.findMany>>;
-  let total: number;
-
-  try {
-    [promptsRaw, total] = await Promise.all([
-      prisma.prompt.findMany({
-        where,
-        orderBy,
-        skip,
-        take: PAGE_SIZE,
-        include: {
-          _count: { select: { likes: true } },
-          likes: userId
-            ? { where: { userId }, select: { id: true } }
-            : { where: { userId: "none" }, select: { id: true } },
-        },
-      }),
-      prisma.prompt.count({ where }),
-    ]);
-  } catch (e) {
+  const [promptsRaw, total] = await Promise.all([
+    prisma.prompt.findMany({
+      where,
+      orderBy,
+      skip,
+      take: PAGE_SIZE,
+      include: {
+        _count: { select: { likes: true } },
+        likes: userId
+          ? { where: { userId }, select: { id: true } }
+          : { where: { userId: "none" }, select: { id: true } },
+      },
+    }),
+    prisma.prompt.count({ where }),
+  ]).catch((e) => {
     console.error("[DashboardPublic] Prisma error:", e);
     throw e;
-  }
+  });
 
   const prompts = promptsRaw.map((p) => ({
     id: p.id,
